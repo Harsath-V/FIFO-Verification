@@ -54,7 +54,7 @@ always @(posedge clk or negedge rst) begin
     else begin
         if(en == 1) begin
             if(wr_en == 1 && (!full)) begin
-                if(wrptr == rdptr) begin
+                if(wrptr == rdptr && empty != 1) begin
                     full <= 1;
                     empty <= 0;
                 end
