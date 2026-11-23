@@ -1,0 +1,25 @@
+# Simulation output
+sim/*
+!sim/.gitkeep
+
+# Vivado xsim
+xsim.dir/
+*.jou
+*.pb
+*.wdb
+webtalk*
+.Xil/
+xvlog.*
+xelab.*
+xsim*.log
+
+# Waveforms
+*.vcd
+*.fst
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+*.swp
