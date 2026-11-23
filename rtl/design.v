@@ -1,72 +1,71 @@
+
 `timescale 1ns / 1ps
 
 module fifo #(
-        parameter width = 32,
-        parameter depth = 128,
-        parameter bits = $clog2(depth),
-        parameter loc = (bits - 1)
+    parameter integer width = 32,
+    parameter integer depth = 128
 )(
-       input wire clk,
-       input wire rst,
-       input wire [width-1:0]din,
-       input wire wr_en,
-       input wire rd_en,
-       input wire en,
-       output reg full,
-       output reg empty,
-       
-       output reg [width-1:0]dout       
+    input  wire clk,
+    input  wire rstn,       // Active-low reset
+    input  wire [width-1:0] din,
+    input  wire wr_en,
+    input  wire rd_en,
+    input  wire en,
+    output wire full,
+    output wire empty,
+    output reg [width-1:0] dout
 );
 
-reg [width-1:0]data[0:depth-1];
-reg [loc-1:0]wrptr, rdptr;
+    localparam integer ADDR_WIDTH = (depth > 1) ? $clog2(depth) : 1;
+    localparam integer COUNT_WIDTH = (depth > 1) ? $clog2(depth+1) : 1;
 
-always @(posedge clk or negedge rst) begin
-    if(!rst) begin
-        wrptr <= 0;
-        rdptr <= 0;
-    end
-    
-    else begin
-        if(en == 1) begin
-            if(wr_en == 1 && (!full)) begin
-                wrptr <= wrptr + 1;
-                data[wrptr] <= din;
+    reg [width-1:0] data [0:depth-1];
+    reg [ADDR_WIDTH-1:0] wr_ptr;
+    reg [ADDR_WIDTH-1:0] rd_ptr;
+    reg [COUNT_WIDTH-1:0] count;
+
+    assign full  = (count == depth);
+    assign empty = (count == 0);
+
+    wire do_write;
+    wire do_read;
+
+    assign do_write = en && wr_en && !full;
+    assign do_read  = en && rd_en && !empty;
+
+    always @(posedge clk or negedge rstn) begin
+
+        if (!rstn) begin
+            wr_ptr <= 0;
+            rd_ptr <= 0;
+            count  <= 0;
+            dout   <= 0;
+        end
+
+        else begin
+            if (do_write) begin
+                data[wr_ptr] <= din;
+                if (wr_ptr == depth-1)
+                    wr_ptr <= 0;
+                else
+                    wr_ptr <= wr_ptr + 1'b1;
             end
-            else if(rd_en == 1 && (!empty)) begin
-                rdptr <= rdptr + 1;
-                dout <= data[rdptr];
+
+            if (do_read) begin
+                dout <= data[rd_ptr];
+                if (rd_ptr == depth-1)
+                    rd_ptr <= 0;
+                else
+                    rd_ptr <= rd_ptr + 1'b1;
             end
-            else begin
-                wrptr <= wrptr;
-                rdptr <= rdptr;
-            end
+
+            // OCCUPANCY COUNTER
+            case ({do_write, do_read})
+                2'b10: count <= count + 1'b1;
+                2'b01: count <= count - 1'b1;
+                2'b11: count <= count;
+                2'b00: count <= count;
+            endcase
         end
     end
-end
-
-always @(posedge clk or negedge rst) begin
-    if(!rst) begin
-        full <= 0;
-        empty <= 1;
-    end  
-    
-    else begin
-        if(en == 1) begin
-            if(wr_en == 1 && (!full)) begin
-                if(wrptr == rdptr && empty != 1) begin
-                    full <= 1;
-                    empty <= 0;
-                end
-            end
-            if(rd_en == 1 && (!empty)) begin
-                if(wrptr == rdptr) begin
-                    full <= 0;
-                    empty <= 1;
-                end
-            end
-        end
-    end
-end
-
 endmodule
