@@ -1,0 +1,27 @@
+run -all
+  PASS: RESET
+  PASS: SINGLE_WRITE
+  PASS: SINGLE_READ
+  PASS: RESET_BEFORE_BOUNDARY
+  PASS: FILL_TO_FULL
+  PASS: WRITE_WHILE_FULL
+  PASS: DRAIN_FIFO
+  PASS: READ_WHILE_EMPTY
+  PASS: DISABLE_HOLDS_FIFO
+  PASS: IDLE_HOLD
+  PASS: RESET_FOR_SIMULTANEOUS
+  PASS: SIMULTANEOUS_SETUP
+  PASS: SIMULTANEOUS_READ_WRITE
+  PASS: SIMULTANEOUS_DRAIN
+
+========== FIFO SCOREBOARD ==========
+Samples checked : 272
+Errors          : 0
+Cases passed    : 14
+Cases failed    : 0
+OVERALL RESULT: PASS
+====================================
+
+$finish called at time : 2725 ns : File "testbench/testbench.sv" Line 585
+exit
+INFO: [Common 17-206] Exiting xsim at Mon Nov 23 23:21:55 2026...
